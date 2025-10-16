@@ -44,16 +44,16 @@ const COLORS = {
 
 // ------------------ BOX POSITIONS ------------------
 const BOX = {
-  TITLE: { l: 0.06, t: 0.52, r: 0.9, b: 0.9 },
+  TITLE: { l: 0.06, t: 0.52, r: 0.9, b: 0.85 },
   DATE: { l: 0.4, t: 0.84, r: 0.6, b: 0.875 },
   SRC: { l: 0.36, t: 0.895, r: 0.64, b: 0.93 },
 };
 
 const SHIFT = {
   TITLE: -0.022,
-  DATE: -0.03,
+  DATE: -0.035,
   SRC: -0.05,
-  PILL: 0.0,
+  PILL: -0.37,
 };
 
 const PILL = {
@@ -66,9 +66,9 @@ const PILL = {
 
 const FONTS = {
   TITLE: {
-    start: 0.055,
+    start: 0.04,
     min: 0.035,
-    lineHeight: 2.18,
+    lineHeight: 1.18,
     color: COLORS.red,
     align: "center",
   },
@@ -219,31 +219,62 @@ function drawTextAutoshrink(
 ) {
   const { l, t, w, h } = box;
   const W = ctx.canvas.width;
+  const H = ctx.canvas.height;
+
+  // Convert normalized box to pixels
+  const maxWidth = w;
+  const maxHeight = h;
+
   let fontPx = Math.round(style.start * W);
   const minPx = Math.round(style.min * W);
   const lh = style.lineHeight;
 
-  while (fontPx >= minPx) {
-    ctx.font = `${weight} ${fontPx}px "${fontFamily}"`;
-    const metrics = ctx.measureText(text);
-    if (metrics.width <= w && fontPx * lh <= h) {
-      const x = l + w / 2;
-      const y = t + dyPx + h / 2 + fontPx / 2.8;
-      ctx.fillStyle = style.color;
-      ctx.textAlign = style.align;
-      ctx.textBaseline = "middle";
-      ctx.fillText(text, x, y);
-      return;
+  // Function to wrap lines
+  function wrapLines(txt, fontSize) {
+    ctx.font = `${weight} ${fontSize}px "${fontFamily}"`;
+    const words = txt.split(/\s+/);
+    const lines = [];
+    let current = "";
+
+    for (let word of words) {
+      const test = current ? current + " " + word : word;
+      if (ctx.measureText(test).width <= maxWidth) {
+        current = test;
+      } else {
+        lines.push(current);
+        current = word;
+      }
     }
+    if (lines.length > 3) {
+      lines = lines.slice(0, 3);
+      lines[2] += "…";
+    }
+    if (current) lines.push(current);
+    return lines;
+  }
+
+  // Try decreasing font size until fits
+  let lines = [];
+  while (fontPx >= minPx) {
+    lines = wrapLines(text, fontPx);
+    const totalHeight = lines.length * fontPx * lh;
+    if (totalHeight <= maxHeight) break;
     fontPx -= 2;
   }
-  ctx.font = `${weight} ${minPx}px "${fontFamily}"`;
+
+  // Draw lines centered
   const x = l + w / 2;
-  const y = t + dyPx + h / 2;
+  const yStart = t + dyPx + (h - lines.length * fontPx * lh) / 2 + fontPx;
   ctx.fillStyle = style.color;
   ctx.textAlign = style.align;
-  ctx.textBaseline = "middle";
-  ctx.fillText(text, x, y);
+  ctx.textBaseline = "alphabetic";
+  ctx.font = `${weight} ${fontPx}px "${fontFamily}"`;
+
+  let y = yStart;
+  for (const line of lines) {
+    ctx.fillText(line, x, y);
+    y += fontPx * lh;
+  }
 }
 
 function drawCategoryPill(ctx, text, photoRect, W, H, fontFamily) {
@@ -251,7 +282,6 @@ function drawCategoryPill(ctx, text, photoRect, W, H, fontFamily) {
   const pillH = PILL.H * H;
   const minW = PILL.MIN_W * W;
   const hpad = PILL.HPAD * W;
-  const radius = PILL.RADIUS * W;
   const y = photoRect.y + photoRect.h + (PILL.TOP_OFFSET + SHIFT.PILL) * H;
 
   let fontPx = Math.round(FONTS.PILL.start * W);
@@ -263,18 +293,15 @@ function drawCategoryPill(ctx, text, photoRect, W, H, fontFamily) {
     ctx.font = `700 ${fontPx}px "${fontFamily}"`;
     textW = ctx.measureText(text).width + 2 * hpad;
   }
-  const pillW = Math.max(minW, textW);
-  const x = (W - pillW) / 2;
 
-  ctx.beginPath();
-  roundRect(ctx, x, y, pillW, pillH, radius);
-  ctx.fillStyle = COLORS.red;
-  ctx.fill();
-  ctx.fillStyle = COLORS.white;
+  const textX = W / 2;
+  const textY = y + pillH / 2;
+
+  ctx.fillStyle = FONTS.PILL.color; // white text
   ctx.font = `700 ${fontPx}px "${fontFamily}"`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(text, x + pillW / 2, y + pillH / 2);
+  ctx.fillText(text, textX, textY);
 }
 
 // ------------------ MAIN ------------------
@@ -350,10 +377,10 @@ function drawCategoryPill(ctx, text, photoRect, W, H, fontFamily) {
           drawTextAutoshrink(ctx, src, box, dy, FONTS.SRC, FONT_FAMILY);
         }
 
-        const baseName = title
-          ? safeSlug(title)
-          : String(i + 1).padStart(3, "0");
-        const outPath = path.join(OUT_DIR, `${baseName}.png`);
+        // const baseName = title
+        //   ? safeSlug(title)
+        //   : String(i + 1).padStart(3, "0");
+        const outPath = path.join(OUT_DIR, `${i + 1}.png`);
         await canvas.saveAs(outPath);
         console.log(
           `[${i + 1}/${total}] ✅ Saved -> ${path.basename(outPath)}`
