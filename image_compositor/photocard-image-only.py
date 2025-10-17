@@ -19,7 +19,7 @@ from pathlib import Path
 # --- Paths ---
 TEMPLATE_PATH = Path("./templates/version-1.png")
 JSON_PATH     = Path("./articles/prothomalo.json")
-OUT_DIR       = Path("./photocards/prothomalo-photocard-image-only")
+OUT_DIR       = Path("./photocards/photocard-image-only")
 
 # --- Core helpers (mirroring the full generator’s logic) ---
 def detect_black_box(template_bgr: np.ndarray):
@@ -117,7 +117,7 @@ def main():
             # 2) Reapply the template’s non-black parts so frame/borders overlay the photo
             composed = composite_with_template(base, overlay_src, mask3)
 
-            out_path = OUT_DIR / f"{i:03d}.png"
+            out_path = OUT_DIR / f"{i}.png"
             cv2.imwrite(str(out_path), composed)
             print(f"[{i}/{total}] OK -> {out_path.name}")
         except Exception as e:
