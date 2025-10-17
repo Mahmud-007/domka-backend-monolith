@@ -87,4 +87,4 @@ class ProthomAloSpider(scrapy.Spider):
             "source": "প্রথম আলো",
             "domain": "prothomalo"
         }
-# scrapy crawl prothomalo -o ./articles/prothomalo.csv
+# scrapy crawl prothomalo -o ../articles/prothomalo.csv

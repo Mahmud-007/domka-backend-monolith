@@ -17,9 +17,9 @@ import numpy as np
 from pathlib import Path
 
 # --- Paths ---
-TEMPLATE_PATH = Path("./templates/version-1.png")
-JSON_PATH     = Path("./articles/prothomalo.json")
-OUT_DIR       = Path("./photocards/photocard-image-only")
+TEMPLATE_PATH = Path("../templates/version-1.png")
+JSON_PATH     = Path("../articles/kalbela.json")
+OUT_DIR       = Path("../photocards/kalbela-photocard-image-only")
 
 # --- Core helpers (mirroring the full generator’s logic) ---
 def detect_black_box(template_bgr: np.ndarray):
