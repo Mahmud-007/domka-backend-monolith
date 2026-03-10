@@ -24,7 +24,7 @@ function argVal(key, def) {
   return i >= 0 && args[i + 1] ? args[i + 1] : def;
 }
 
-const JSON_PATH = argVal("--json", "../output/article_filtered-2.json");
+const JSON_PATH = argVal("--json", "../articles/article_filtered-2.json");
 const IN_DIR = argVal("--in", "../photocards/photocard-image-only");
 const OUT_DIR = argVal("--out", "../photocards/photocard-skia");
 const FONT_PATH = argVal("--font", "../fonts/HindSiliguri-Bold.ttf");

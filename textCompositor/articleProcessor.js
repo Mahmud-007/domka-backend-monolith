@@ -106,9 +106,9 @@ JSON আকারে দাও:
 }
 
 results.sort((a, b) => b.score - a.score);
-fs.mkdirSync("../output", { recursive: true });
+fs.mkdirSync("../articles", { recursive: true });
 fs.writeFileSync(
-  "../output/article_filtered-2.json",
+  "../articles/article_filtered-2.json",
   JSON.stringify(results, null, 2)
 );
 
